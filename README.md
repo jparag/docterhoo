@@ -14,7 +14,7 @@ This is a project template for a Java Hadoop map-reduce process.
  1. **Fork this repository** to start a new map-reduce project.
  2. Clone the new repository.
  3. (optional) Import the project to Eclipse.
- 	* The project will initially be named *starter-java-mr* so you should rename the project within Eclipse.
+     * The project will initially be named *starter-java-mr* so you should rename the project within Eclipse.
  4. Change the project name on the first line of build.xml. The build script uses this field to control the name of the jar files it produces.
  5. Replace these instructions in the README.md file with useful information about your project.
  6. Write your code.
