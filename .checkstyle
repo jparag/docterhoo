@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <local-check-config name="checkstyle-comscore" location="checkstyle-comscore.xml" type="project" description="Style rules that apply to all project types.">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <local-check-config name="checkstyle-comscore-tests" location="checkstyle-comscore-tests.xml" type="project" description="Style rules for test code.">
+    <additional-data name="protect-config-file" value="false"/>
+  </local-check-config>
+  <fileset name="src/**" enabled="true" check-config-name="checkstyle-comscore" local="true">
+    <file-match-pattern match-pattern="^src/.*\.java$" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/com/comscore/fusion/common/rules/parser/(RuleScanner|RuleParser)\.java$" include-pattern="false"/>
+  </fileset>
+  <fileset name="test/**" enabled="true" check-config-name="checkstyle-comscore-tests" local="true">
+    <file-match-pattern match-pattern="^test/.*\.java$" include-pattern="true"/>
+  </fileset>
+</fileset-config>

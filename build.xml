@@ -1,0 +1,216 @@
+<project name="starter-java-mr" basedir="." default="main">
+
+	<property name="src.dir" location="src" />
+	<property name="test.src.dir" location="test" />
+
+	<property name="build.dir" location="build" />
+	<property name="build.prod.dir" location="${build.dir}/prod" />
+	<property name="prod.classes.dir" location="${build.prod.dir}/classes" />
+
+	<property name="build.test.dir" location="${build.dir}/test" />
+	<property name="test.classes.dir" location="${build.test.dir}/classes" />
+
+	<property name="lib.prod.dir" location="lib/prod" />
+	<property name="lib.tools.dir" location="lib/tools" />
+	<property name="lib.vendor.dir" location="lib/vendor" />
+
+	<property name="dependency.dir" value="${build.dir}/lib" />
+	<property name="jar.dir" location="jar" />
+
+	<property name="build.reports.dir" location="${build.dir}/reports" />
+
+	<property name="emma.dir" location="${lib.tools.dir}" />
+
+	<path id="emma.lib">
+		<pathelement location="${emma.dir}/emma.jar" />
+		<pathelement location="${emma.dir}/emma_ant.jar" />
+	</path>
+	<taskdef resource="emma_ant.properties" classpathref="emma.lib" />
+
+	<path id="checkstyle.lib">
+		<pathelement location="${lib.tools.dir}/checkstyle-5.6-all.jar" />
+	</path>
+	<taskdef resource="checkstyletask.properties" classpathref="checkstyle.lib" />
+
+	<path id="compile.classpath">
+		<fileset dir="${lib.prod.dir}" includes="**/*.jar" />
+		<fileset dir="${lib.vendor.dir}" includes="**/*.jar" />
+	</path>
+
+	<path id="prod.classes">
+		<pathelement location="${prod.classes.dir}" />
+	</path>
+
+	<path id="prod.classpath">
+		<path refid="prod.classes" />
+		<path refid="compile.classpath" />
+	</path>
+
+	<path id="compile.test.classpath">
+		<path refid="prod.classpath" />
+		<fileset dir="${lib.tools.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<path id="run.test.classpath">
+		<pathelement location="${test.classes.dir}" />
+		<path refid="compile.test.classpath" />
+	</path>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${jar.dir}" />
+	</target>
+
+	<target name="coverage" description="Turn on code coverage instrumentation/reporting.">
+		<property name="emma.enabled" value="true" />
+
+		<property name="test.instrumented.dir" value="${prod.classes.dir}/../instrumented" />
+		<property name="coverage.dir" value="${prod.classes.dir}/../coverage" />
+		<property name="emma.metadata.file" value="${coverage.dir}/metadata.emma" />
+		<property name="emma.coverage.file" value="${coverage.dir}/coverage.emma" />
+		<property name="reports.coverage.dir" value="${build.reports.dir}/coverage" />
+
+		<mkdir dir="${test.instrumented.dir}" />
+		<mkdir dir="${coverage.dir}" />
+		<mkdir dir="${reports.coverage.dir}" />
+	</target>
+
+	<target name="checkstyle">
+		<property name="reports.checkstyle.dir" value="${build.reports.dir}/checkstyle" />
+		<mkdir dir="${reports.checkstyle.dir}" />
+
+		<checkstyle config="checkstyle-comscore.xml" failOnViolation="false" failureProperty="checkstyle.failed">
+			<fileset dir="${src.dir}">
+				<include name="**/*.java" />
+			</fileset>
+			<formatter type="xml" toFile="${reports.checkstyle.dir}/checkstyle_errors.xml" />
+		</checkstyle>
+		<checkstyle config="checkstyle-comscore-tests.xml" failOnViolation="false" failureProperty="checkstyle.failed">
+			<fileset dir="${test.src.dir}">
+				<include name="**/*.java" />
+			</fileset>
+			<formatter type="xml" toFile="${reports.checkstyle.dir}/checkstyle_tests_errors.xml" />
+		</checkstyle>
+		<!-- fail message="Coding style violations." if="checkstyle.failed" / -->
+	</target>
+
+	<target name="test"
+	        depends="checkstyle,compile-tests"
+	        description="Run unit tests and generate reports for the results.">
+		<property name="reports.unittest.dir" value="${build.reports.dir}/unittest" />
+
+		<mkdir dir="${reports.unittest.dir}" />
+
+		<emma enabled="${emma.enabled}">
+			<instr instrpathref="prod.classes"
+			       destdir="${test.instrumented.dir}"
+			       filter="com.comscore.*"
+			       metadatafile="${emma.metadata.file}"
+			       merge="true" />
+		</emma>
+
+		<!-- The fork and forkmode settings are important for the code coverage tool.-->
+		<!-- The tool writes its data at JVM shutdown, so it needs fork="yes" to create a separate JVM. -->
+		<!-- It also must only fork once so that the test results accumulate in the output file instead of overwriting each other. -->
+		<junit fork="yes" forkmode="once" printsummary="no" haltonfailure="no">
+			<batchtest todir="${reports.unittest.dir}">
+				<fileset dir="${test.classes.dir}">
+					<include name="**" />
+				</fileset>
+			</batchtest>
+			<formatter type="xml" />
+			<classpath>
+				<pathelement location="${test.instrumented.dir}" />
+				<path refid="run.test.classpath" />
+				<path refid="emma.lib" />
+			</classpath>
+			<jvmarg value="-Xmx256m" />
+			<jvmarg value="-Demma.coverage.out.file=${emma.coverage.file}" />
+			<jvmarg value="-Demma.coverage.out.merge=false" />
+		</junit>
+
+		<emma enabled="${emma.enabled}">
+			<report sourcepath="${src.dir}">
+				<fileset dir="${coverage.dir}">
+					<include name="*.emma" />
+				</fileset>
+
+				<xml outfile="${reports.coverage.dir}/coverage.xml" depth="method" />
+				<html outfile="${reports.coverage.dir}/index.html" encoding="UTF-8" />
+			</report>
+		</emma>
+	</target>
+
+	<target name="dependencies">
+		<copy todir="${dependency.dir}" flatten="true">
+			<fileset dir="${lib.prod.dir}" includes="**/*.jar" erroronmissingdir="false" />
+		</copy>
+	</target>
+
+	<target name="compile" depends="dependencies">
+		<mkdir dir="${prod.classes.dir}" />
+		<javac fork="true"
+		       srcdir="${src.dir}"
+		       destdir="${prod.classes.dir}"
+		       classpathref="compile.classpath"
+		       includeAntRuntime="false"
+		       debug="true"
+		       deprecation="true"
+		       source="1.6"
+		       target="1.6">
+			<compilerarg value="-Xlint:all" />
+			<compilerarg value="-Xlint:-serial" />
+			<compilerarg value="-Xmaxerrs" />
+			<compilerarg value="5000" />
+			<compilerarg value="-Xmaxwarns" />
+			<compilerarg value="5000" />
+		</javac>
+		<copy todir="${prod.classes.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile-tests" depends="compile">
+		<mkdir dir="${test.classes.dir}" />
+		<javac fork="true"
+		       srcdir="${test.src.dir}"
+		       destdir="${test.classes.dir}"
+		       classpathref="compile.test.classpath"
+		       includeAntRuntime="false"
+		       debug="true"
+		       deprecation="true"
+		       source="1.6"
+		       target="1.6">
+			<compilerarg value="-Xlint" />
+		</javac>
+		<copy todir="${test.classes.dir}">
+			<fileset dir="${test.src.dir}">
+				<include name="**" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="src-jar" depends="compile">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/${ant.project.name}-src.jar">
+			<fileset dir="${src.dir}" />
+		</jar>
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/${ant.project.name}.jar">
+			<fileset dir="${prod.classes.dir}" />
+			<fileset dir="${build.dir}" includes="lib/**" />
+		</jar>
+	</target>
+
+	<target name="main" depends="clean,jar,src-jar" description="Perform a clean build of the default targets."/>
+
+</project>
