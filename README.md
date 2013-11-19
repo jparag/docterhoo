@@ -7,6 +7,7 @@ This is a project template for a Java Hadoop map-reduce process.
  * JUnit .jars
  * Checkstyle configuration
  * Code coverage tools
+ * Java code formatter settings for Eclipse.
  * Git will ignore the /bin, /build, and /jar folders created by the Eclipse and Ant script builds.
 
 ### Usage Steps
