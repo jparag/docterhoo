@@ -169,7 +169,6 @@
 		</javac>
 		<copy todir="${prod.classes.dir}">
 			<fileset dir="${src.dir}">
-				<include name="**" />
 				<exclude name="**/*.java" />
 			</fileset>
 		</copy>
@@ -190,7 +189,6 @@
 		</javac>
 		<copy todir="${test.classes.dir}">
 			<fileset dir="${test.src.dir}">
-				<include name="**" />
 				<exclude name="**/*.java" />
 			</fileset>
 		</copy>
@@ -211,6 +209,6 @@
 		</jar>
 	</target>
 
-	<target name="main" depends="clean,jar,src-jar" description="Perform a clean build of the default targets."/>
+	<target name="main" depends="clean,jar,src-jar" description="Perform a clean build of the default targets." />
 
 </project>
