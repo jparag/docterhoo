@@ -83,7 +83,7 @@
 
 		<checkstyle config="checkstyle-comscore.xml" failOnViolation="false" failureProperty="checkstyle.failed">
 			<fileset dir="${src.dir}">
-				<include name="**/*.java" />				
+				<include name="**/*.java" />
 			</fileset>
 			<formatter type="xml" toFile="${reports.checkstyle.dir}/checkstyle_errors.xml" />
 		</checkstyle>
