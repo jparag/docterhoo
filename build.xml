@@ -84,6 +84,7 @@
 		<checkstyle config="checkstyle-comscore.xml" failOnViolation="false" failureProperty="checkstyle.failed">
 			<fileset dir="${src.dir}">
 				<include name="**/*.java" />
+				<exclude name="**/*$*.class" />
 			</fileset>
 			<formatter type="xml" toFile="${reports.checkstyle.dir}/checkstyle_errors.xml" />
 		</checkstyle>
