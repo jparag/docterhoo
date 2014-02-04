@@ -117,7 +117,7 @@
 		<junit fork="yes" forkmode="once" printsummary="no" haltonfailure="no">
 			<batchtest todir="${reports.unittest.dir}">
 				<fileset dir="${test.classes.dir}">
-					<include name="**" />
+					<include name="**/*Test.class" />
 				</fileset>
 			</batchtest>
 			<formatter type="xml" />
