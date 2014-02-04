@@ -83,8 +83,7 @@
 
 		<checkstyle config="checkstyle-comscore.xml" failOnViolation="false" failureProperty="checkstyle.failed">
 			<fileset dir="${src.dir}">
-				<include name="**/*.java" />
-				<exclude name="**/*$*.class" />
+				<include name="**/*.java" />				
 			</fileset>
 			<formatter type="xml" toFile="${reports.checkstyle.dir}/checkstyle_errors.xml" />
 		</checkstyle>
@@ -118,7 +117,7 @@
 		<junit fork="yes" forkmode="once" printsummary="no" haltonfailure="no">
 			<batchtest todir="${reports.unittest.dir}">
 				<fileset dir="${test.classes.dir}">
-					<include name="**" />
+					<include name="**/*Test.class" />
 				</fileset>
 			</batchtest>
 			<formatter type="xml" />
