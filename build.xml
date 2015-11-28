@@ -1,4 +1,4 @@
-<project name="starter-java-mr" basedir="." default="main">
+<project name="docterhoo" basedir="." default="main">
 
 	<property name="src.dir" location="src" />
 	<property name="test.src.dir" location="test" />
